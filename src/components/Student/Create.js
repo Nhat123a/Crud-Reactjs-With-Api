@@ -33,9 +33,7 @@ const Create = () => {
     if (res.status === 200) {
       console.log(">>>>>check :", res);
       Toast("success", "Create Successfully");
-      setTimeout(() => {
-        navigate("/student");
-      }, 3000);
+      navigate("/student");
     } else {
       Toast("error", "Cannot create Student");
     }

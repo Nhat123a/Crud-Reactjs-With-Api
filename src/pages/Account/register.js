@@ -1,5 +1,5 @@
 import { data } from "autoprefixer";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa6";
@@ -20,9 +20,15 @@ const Register = () => {
       username: yup.string().required("UserName required!"),
       name: yup.string().required("Name required!"),
       email: yup.string().required("Email required!"),
-      password: yup.string().required("Password required!").min(6, "Password must be at least 6 characters long!") 
-      .matches(/[A-Z]/, "Password must contain at least one uppercase letter!") 
-      .matches(/[0-9]/, "Password must contain at least one number!") ,
+      password: yup
+        .string()
+        .required("Password required!")
+        .min(6, "Password must be at least 6 characters long!")
+        .matches(
+          /[A-Z]/,
+          "Password must contain at least one uppercase letter!"
+        )
+        .matches(/[0-9]/, "Password must contain at least one number!"),
       passwordConfirm: yup
         .string()
         .oneOf([yup.ref("password"), null], "Password is fails")
@@ -54,13 +60,11 @@ const Register = () => {
       if (res.status === 200) {
         navigate("/account/login");
         // console.log(">>>>>>Succes :", res.data);
-        Toast("success","Register Success")
-
-      } 
+        Toast("success", "Register Success");
+      }
     } catch (err) {
       // console.log(">>>>>>Lỗi :", err);
-      Toast("error","Register Failed")
-
+      Toast("error", "Register Failed");
     }
   };
   return (
@@ -141,4 +145,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default memo(Register);

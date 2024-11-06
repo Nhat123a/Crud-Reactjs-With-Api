@@ -1,13 +1,16 @@
 import { data } from "autoprefixer";
-import React, { useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {  Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { FaFacebook } from "react-icons/fa";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LoginApi } from "../../components/API";
 import Toast from "../../components/Toast";
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
+
 const Login = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -18,11 +21,11 @@ const Login = () => {
   };
 
   const schema = yup
-  .object({
-    username: yup.string().required("UserName required!"),
-    password: yup.string().required("Password required!"),
-  })
-  .shape();
+    .object({
+      username: yup.string().required("UserName required!"),
+      password: yup.string().required("Password required!"),
+    })
+    .shape();
   const {
     register,
     handleSubmit,
@@ -30,23 +33,36 @@ const Login = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
-  const onsubmit = async (data)=>{
-    const {username,password} = data
-    try{
-      const res = await LoginApi(username,password)
+  const onsubmit = async (data) => {
+    const { username, password } = data;
+    try {
+      const res = await LoginApi(username, password);
       // console.log(">>>>>>Response:",res.data)
-      if(res.status===200){
-        localStorage.setItem('user', JSON.stringify(res.data))
+      if (res.status === 200) {
+        localStorage.setItem("user", JSON.stringify(res.data));
         // console.log('>>>>>>Login Succes')
         // console.log(user)
-        Toast("success","Login Success")
-        navigate('/')
+        Toast("success", "Login Success");
+        navigate("/");
       }
-    }catch(err){
+    } catch (err) {
       // console.log(">>>>>Lỗi Login: ",err)
-      Toast("error","Incorrect username or password")
+      Toast("error", "Incorrect username or password");
     }
-  }
+  };
+  const responseMessage = (response) => {
+    const token = response.credential; // Token nhận được từ Google Login
+    // console.log("JWT Token: ", token);
+    if(token){
+      navigate('/')
+      localStorage.setItem('google_token', token)
+    }
+  };
+  const errorMessage = (error) => {
+    console.log(error);
+  };
+
+
   return (
     <div className="bg-white   p-7 rounded-md shadow-md w-full max-w-md">
       <div className="text-center">
@@ -69,8 +85,8 @@ const Login = () => {
           onChange={(e) => setPassword(e.target.value)}
           className={`block  mb-3 w-full text-[15px] rounded px-[10px] h-12  border ${
             errors.password ? "border-red-500" : "border-[#e6e6e6]"
-          } outline-none`}   
-                />
+          } outline-none`}
+        />
         <div className="flex gap-2 items-center justify-center mb-5">
           <input type="checkbox" checked={show} onChange={handleShowPassword} />
           <label>Show password</label>
@@ -89,22 +105,23 @@ const Login = () => {
           value="Sign in"
         />
         <div className="w-full my-5 border-b border-gray-300 "></div>
+      </form>
 
-        <button
-          className="bg-red-500 uppercase mb-3 cursor-pointer w-full p-3 text-white font-semibold rounded flex items-center justify-center"
-          type="submit"
-        >
-          <FaGoogle size={18} className="mr-2" /> Sign in with Google
-        </button>
+      <div className="w-full flex items-center justify-center flex-col gap-5">
+
+          <GoogleLogin
+            onSuccess={responseMessage}
+            onError={errorMessage}
+          ></GoogleLogin>
         <button
           className="bg-blue-800 uppercase mb-3 cursor-pointer w-full p-3 text-white font-semibold rounded flex items-center justify-center"
           type="submit"
         >
           <FaFacebook size={18} className="mr-2" /> Sign in with Facebook
         </button>
-      </form>
+      </div>
     </div>
   );
 };
 
-export default Login;
+export default memo(Login);

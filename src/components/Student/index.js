@@ -1,24 +1,23 @@
-import { Button, Space, Table } from "antd";
-import axios from "axios";
+import { Button, Space, Table, Modal } from "antd";
 import React, { memo, useEffect, useState } from "react";
-import {useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { deleteApi, getStudentApiByClass } from "../API";
+import Toast from "../Toast";
 
 const Student = () => {
   const navigate = useNavigate();
-  const dataSource = [
-    {
-      key: "1",
-      name: "Mike 10 Downing Street",
-      Class: "Class 2",
-      address: "10 Downing Street",
-    },
-    {
-      key: "2",
-      name: "John",
-      Class: "Class 1",
-      address: "10 Downing Street",
-    },
-  ];
+  const [dataSource, setData] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [ID, setID] = useState(null);
+
+  const [current, setCurrent] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const handleDetail = (StudentID) => {
+    navigate(`/student/detail/${StudentID}`);
+  };
+  const handleEdit = (id) => {
+    navigate(`/student/edit/${id}`);
+  };
   const columns = [
     {
       title: "Name",
@@ -29,6 +28,16 @@ const Student = () => {
       title: "Class",
       dataIndex: "Class",
       key: "Class",
+      render: (text, dataSource) => {
+        return dataSource.classes.map((item, index) => {
+          return (
+            <span key={item.id}>
+              {item.name}
+              {index < dataSource.classes.length - 1 && ", "}
+            </span>
+          );
+        });
+      },
     },
     {
       title: "Address",
@@ -40,11 +49,15 @@ const Student = () => {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary">Edit</Button>
-          <Button danger type="primary">
+          <Button type="primary" onClick={() => handleEdit(record.id)}>
+            Edit
+          </Button>
+          <Button onClick={() => showModal(record.id)} danger type="primary">
             Delete
           </Button>
-          <Button type="primary">Detail</Button>
+          <Button onClick={() => handleDetail(record.id)} type="primary">
+            Detail
+          </Button>
         </Space>
       ),
     },
@@ -52,59 +65,48 @@ const Student = () => {
   const HandleClick = () => {
     navigate("/student/create");
   };
-  const fetchClassesWithStudents = async () => {
-    const params = {
-        draw: 1,
-        columns: [
-            {
-                data: "name",
-                name: "Name",
-                searchable: true,
-                orderable: true,
-                search: {
-                    value: "", // Add search term if needed
-                    regex: false
-                }
-            }
-        ],
-        order: [
-            {
-                column: 0,
-                dir: "asc" // or "desc"
-            }
-        ],
-        start: 0,
-        length: 10, // Number of records to fetch
-        search: {
-            value: "", // Global search term if needed
-            regex: false
-        }
-    };
-
-    try {
-        const response = await axios('https://localhost:7226/api/Student/StudentWithClass', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(params)
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-        console.log(data); // Handle the data as needed
-    } catch (error) {
-        console.error('Error fetching data:', error);
+  const HandleGetdata = async () => {
+    const res = await getStudentApiByClass();
+    if (res.status === 200) {
+      // console.log(">>>>>>>check:", res.data);
+      setData(res.data.data);
+      // console.log(">>>>>>>check data", dataSource);
     }
-};
+  };
+  useEffect(() => {
+    HandleGetdata();
+  }, []);
+  // Xóa
+  const handleDelete = async (id) => {
+    try {
+      const res = await deleteApi(id);
+      if (res.status === 200) {
+        // Hoặc nếu bạn nhận một đối tượng với thuộc tính status
+        HandleGetdata();
+        Toast("success", "Delete success");
+      } else {
+        Toast("error", "Failed to delete");
+      }
+    } catch (err) {
+      console.log(">>>check error:", err);
+    }
+  };
+  // Modal
+  const showModal = (id) => {
+    setIsModalOpen(true);
+    // handleDelete(id)
+    setID(id);
+  };
+  // console.log(ID);
 
-// Call this function when needed, e.g., on component mount or button click
-useEffect(()=>{
-  fetchClassesWithStudents()
-},[])
+  const handleOk = async () => {
+    setIsModalOpen(false);
+    await handleDelete(ID);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <>
@@ -114,12 +116,34 @@ useEffect(()=>{
       <div className=" container mt-5">
         <Space size="middle">
           <Button onClick={HandleClick} type="primary">
-            Create
+            Create new student
           </Button>
         </Space>
-        <Table dataSource={dataSource} columns={columns} />;
+        <Table
+          dataSource={dataSource}
+          columns={columns}
+          pagination={{
+            current,
+            pageSize,
+            total: dataSource.length,
+            pageSizeOptions: ["5", "10", "20", "40"],
+            showSizeChanger: true,
+            onShowSizeChange: (current, size) => setPageSize(size),
+            onChange: (page, pageSize) => {
+              setCurrent(page);
+              setPageSize(pageSize);
+            },
+          }}
+          rowKey={"name"}
+        />
+        ;
       </div>
-
+      <Modal
+        title="You want to delete Student?"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      ></Modal>
     </>
   );
 };

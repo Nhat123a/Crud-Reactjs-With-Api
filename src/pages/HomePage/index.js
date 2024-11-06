@@ -1,33 +1,33 @@
+import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from "react";
 
 export const HomePage = () => {
-  const [user,setUser] = useState('')
+  const [user, setUser] = useState("");
   const [userName, setUserName] = useState(null);
-  useEffect(()=>{
-    const getUser = localStorage.getItem('user')
-    if(getUser){
-      const users = JSON.parse(getUser)
-      setUser(users)
-      console.log(">>>>>>>>check data:",user)
-    } 
-  },[user])
-  const parseJwt = (token) =>{
-    if(!token) return null
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-        atob(base64)
-            .split('')
-            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-            .join('')
-    );
-    return JSON.parse(jsonPayload);
-  }
+  const [googleName, setGoogleName] = useState(null);
+
+  useEffect(() => {
+    const getUser = localStorage.getItem("user");
+    if (getUser) {
+      const users = JSON.parse(getUser);
+      setUser(users);
+      // console.log(">>>>>>>>check data:",user)
+    }
+    // Google
+    const googleToken = localStorage.getItem("google_token");
+    if (googleToken) {
+      const decodedGoogleToken = jwtDecode(googleToken);
+      if (decodedGoogleToken && decodedGoogleToken.name) {
+        setGoogleName(decodedGoogleToken.name);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
-      const result = parseJwt(user);
+      const result = jwtDecode(user);
       if (result && result.UserName) {
-        setUserName(result.UserName); 
+        setUserName(result.UserName);
       }
     }
   }, [user]);
@@ -35,7 +35,11 @@ export const HomePage = () => {
     <div className="container">
       <div className="flex items-center justify-center mt-10">
         <span className="text-2xl text-blue-300 font-bold">
-          {user?`Welcome to ${userName}`:"" }
+          {user
+            ? `Welcome to ${userName}`
+            : googleName
+            ? `Welcome to ${googleName}`
+            : "Please Login Now"}
         </span>
       </div>
     </div>

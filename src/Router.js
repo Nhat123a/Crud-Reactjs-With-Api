@@ -8,6 +8,10 @@ import Register from "./pages/Account/register";
 import Student from "./components/Student";
 import Class from "./components/Class";
 import Create from "./components/Student/Create";
+import Authenticated from "./components/Authenticated";
+import Detail from "./components/Student/Detail";
+import Edit from "./components/Student/Edit";
+import CreateClass from "./components/Class/Create";
 const Renderrouter = () => {
   // const userRouter = [
   //   {
@@ -52,12 +56,17 @@ const Renderrouter = () => {
             );
           })} */}
           {/* Layout trang chu */}
+          {/* <Route element={<Authenticated />}></Route> */}
           <Route path="/" element={<Layout />}>
             <Route path="" element={<HomePage />} />
             <Route path="/student" element={<Student />} />
             <Route path="/student/create" element={<Create />} />
-            <Route path="/Class" element={<Class />} />
+            <Route path="/student/detail/:id" element={<Detail />} />
+            <Route path="/student/edit/:id" element={<Edit />} />
+            <Route path="/Class" element={<Class />}></Route>
+            <Route path="/Class/Create" element={<CreateClass />}></Route>
           </Route>
+
           {/* Layout account */}
           <Route path="account" element={<Account />}>
             <Route path="login" element={<Login />} />
