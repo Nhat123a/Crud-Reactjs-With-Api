@@ -17,21 +17,30 @@ const breadcrumbNameMap = {
 const AppBreadcrumb = () => {
   const location = useLocation();
   const __path = location.pathname.split("/").filter((i) => i);
+
   if (location.pathname === "/") return null;
+
   const Items = [
     {
       title: <Link to="/">Home</Link>,
     },
-    ...__path.map((_, index) => {
-      const url = `/${__path.slice(0, index + 1).join("/")}`;
-      return {
-        title: breadcrumbNameMap[url] ? (
-          <Link to={url}>{breadcrumbNameMap[url]}</Link>
-        ) : (
-          "Not Find"
-        ),
-      };
-    }),
+    ...__path
+      .map((path, index) => {
+        const url = `/${__path.slice(0, index + 1).join("/")}`;
+        const isLast = index === __path.length - 1;
+        const breadcrumbName = breadcrumbNameMap[url];
+        if (breadcrumbName) {
+          return {
+            title: isLast ? (
+              breadcrumbName
+            ) : (
+              <Link to={url}>{breadcrumbName}</Link>
+            ),
+          };
+        }
+        return null; 
+      })
+      .filter(Boolean), 
   ];
 
   return (

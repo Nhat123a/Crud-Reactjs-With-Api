@@ -1,74 +1,35 @@
 import React, { Suspense } from "react";
-import { HomePage } from "./pages/HomePage";
 import { Route, Routes } from "react-router";
-import { Layout } from "./pages/theme/Layout";
-import Account from "./pages/Account/Layout";
-import Login from "./pages/Account/Login";
-import Register from "./pages/Account/register";
-import Student from "./components/Student";
-import Class from "./components/Class";
-import Create from "./components/Student/Create";
-import Authenticated from "./components/Authenticated";
-import Detail from "./components/Student/Detail";
-import Edit from "./components/Student/Edit";
-import CreateClass from "./components/Class/Create";
+import { Home } from "./container/Home/home";
+import StudentView from "./container/Student/views/studentView";
+import Edit from "./container/Student/views/Edit";
+import Detail from "./container/Student/views/Detail";
+import Create from "./container/Student/views/Create";
+import Class from "./container/Class/views/classView";
+import CreateClass from "./container/Class/views/create";
+import EditClass from "./container/Class/views/edit";
+import { Layout } from "./components/theme/layout/layout";
+import Login from "./container/account/views/login";
+import AccountView from "./container/account/views/layoutAccount";
+import Register from "./container/account/views/register";
+
 const Renderrouter = () => {
-  // const userRouter = [
-  //   {
-  //     path: ROUTER.USER.Home,
-  //     component: HomePage,
-  //   },
-  //   {
-  //     path: ROUTER.USER.Login,
-  //     component: <>hhh</>,
-  //   },
-  //   {
-  //     path: ROUTER.USER.Register,
-  //     component: <>hhh</>,
-  //   },
-  // ];
   return (
     <div>
       <Suspense>
         <Routes>
-          {/* {userRouter.map((item, index) => {
-            // console.log(item.path);
-            // console.log(ROUTER.USER.Login);
-
-            // console.log(item.path === ROUTER.USER.Login);
-            return (
-              <Route
-                key={index}
-                path={item.path}
-                element={
-                  item.path === ROUTER.USER.Login ||
-                  item.path === ROUTER.USER.Register ? (
-                    <Account>
-                      <item.component />
-                    </Account>
-                  ) : (
-                    <Layout>
-                      <item.component />
-                    </Layout>
-                  )
-                }
-              />
-            );
-          })} */}
-          {/* Layout trang chu */}
-          {/* <Route element={<Authenticated />}></Route> */}
           <Route path="/" element={<Layout />}>
-            <Route path="" element={<HomePage />} />
-            <Route path="/student" element={<Student />} />
+            <Route path="" element={<Home />} />
+            <Route path="/student" element={<StudentView />} />
             <Route path="/student/create" element={<Create />} />
             <Route path="/student/detail/:id" element={<Detail />} />
             <Route path="/student/edit/:id" element={<Edit />} />
             <Route path="/Class" element={<Class />}></Route>
             <Route path="/Class/Create" element={<CreateClass />}></Route>
+            <Route path="/Class/edit/:id" element={<EditClass />}></Route>
           </Route>
 
-          {/* Layout account */}
-          <Route path="account" element={<Account />}>
+          <Route path="account" element={<AccountView />}>
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
           </Route>
